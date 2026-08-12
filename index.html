@@ -65,7 +65,7 @@
                 </div>
                 <div class="flex items-center space-x-2">
                     <span class="font-extrabold text-lg text-white tracking-wide">KERF Projects</span>
-                    <span class="bg-kerfRed text-white text-[10px] px-2 py-0.5 rounded font-mono font-bold shadow">V1.0 UI</span>
+                    <span class="bg-kerfRed text-white text-[10px] px-2 py-0.5 rounded font-mono font-bold shadow">V1.2 UI</span>
                 </div>
             </div>
             
@@ -173,7 +173,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-extrabold text-white uppercase tracking-wide">Suppliers Directory</h2>
-                    <p class="text-sm text-textSecondary">Curated suppliers categorized by service from your master list.</p>
+                    <p class="text-sm text-textSecondary">Curated master list of suppliers.</p>
                 </div>
                 <div class="relative w-72">
                     <input type="text" id="supplierSearchInput" oninput="filterSuppliersDirectory()" placeholder="Filter suppliers..." class="w-full bg-kerfCard border border-kerfBorder rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
@@ -220,30 +220,30 @@
                     <input type="text" id="modalProjectName" required placeholder="e.g. Conveyor Frame Custom Bracket" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none">
                 </div>
 
-                <!-- Flexible Reference Input: Supports Google Drive Link or Local Network Server Pathway (e.g., \\server\share\) -->
+                <!-- Flexible Reference Input -->
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Drive Link / Local Server Pathway (Optional)</label>
                     <input type="text" id="modalFolderLink" placeholder="https://drive.google.com/... OR \\server\share\drawings\" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none font-mono">
                     <p class="text-[11px] text-textSecondary mt-1">Leave blank if uploading files below for automatic cloud folder generation, or paste an existing link/pathway.</p>
                 </div>
 
-                <!-- Multi-Select Categories Section -->
+                <!-- STEP 1: Select Suppliers First -->
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Select Required Categories * (Multiple)</label>
-                    <div id="categoryCheckboxesContainer" class="bg-kerfBg border border-kerfBorder rounded-lg p-3.5 max-h-36 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <p class="text-xs text-textSecondary italic col-span-full">Loading categories...</p>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Select Suppliers Queried (RFQs Sent) *</label>
+                    <div id="supplierCheckboxesContainer" class="bg-kerfBg border border-kerfBorder rounded-lg p-3.5 max-h-40 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <p class="text-xs text-textSecondary italic col-span-full">Loading suppliers...</p>
                     </div>
                 </div>
 
-                <!-- Dynamic Suppliers Queried Section Grouped by Selected Categories -->
+                <!-- STEP 2: Assign Categories Per Selected Supplier with Autocomplete -->
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Suppliers Queried (RFQs Sent)</label>
-                    <div id="supplierCheckboxesContainer" class="bg-kerfBg border border-kerfBorder rounded-lg p-3.5 max-h-48 overflow-y-auto space-y-3">
-                        <p class="text-xs text-textSecondary italic">Select categories above to load matching suppliers.</p>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Categories Requested Per Supplier *</label>
+                    <div id="supplierCategoriesContainer" class="bg-kerfBg border border-kerfBorder rounded-lg p-3.5 space-y-3">
+                        <p class="text-xs text-textSecondary italic">Select suppliers above to configure categories for each.</p>
                     </div>
                 </div>
 
-                <!-- Direct File Upload (Auto-Uploads to Drive if no manual link provided) -->
+                <!-- Direct File Upload -->
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Upload Technical Drawing / Files (Optional)</label>
                     <input type="file" id="modalFile" class="w-full text-sm text-textSecondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-kerfBg file:text-white hover:file:bg-kerfBorder cursor-pointer border border-kerfBorder rounded-lg">
@@ -266,10 +266,11 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyLofaC00g8L1NCEBU_45uVRIHdqucnYoqE1mBJyHKoUwyGBOigqmcYm0wbcKuGC-Bxug/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxjWH48-0yhxgrgt_fwioup42lEufkYqQONqBVquOjzw62Cjap2kT1Hn-NAdXtlY4BVsg/exec";
 
         let allProjects = [];
         let allSuppliers = [];
+        let allUniqueCategories = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             loadData();
@@ -286,7 +287,16 @@
                 allProjects = data.projects || [];
                 allSuppliers = data.suppliers || [];
 
-                populateCategoryCheckboxes();
+                // Extract unique master categories from supplier list or predefined pool
+                const catSet = new Set();
+                allSuppliers.forEach(s => {
+                    if (s.Category) {
+                        s.Category.split(',').forEach(c => catSet.add(c.trim()));
+                    }
+                });
+                allUniqueCategories = Array.from(catSet).sort();
+
+                populateSupplierCheckboxes();
                 renderProjects(allProjects);
                 updateMetrics(allProjects);
                 renderSuppliersDirectory(allSuppliers);
@@ -360,7 +370,6 @@
                     if (diffDays > 3) isStale = true;
                 }
 
-                // Check if folder link is a local path or a URL
                 const linkVal = p.DriveFolderLink || "";
                 let linkHtml = '<span class="text-textSecondary">No reference attached</span>';
                 if (linkVal) {
@@ -391,18 +400,18 @@
                         </div>
 
                         <h3 class="font-bold text-base text-white mb-1">${p.ProjectName || 'Untitled Project'}</h3>
-                        <p class="text-xs text-textSecondary mb-4 flex items-center space-x-1">
-                            <i class="fa-solid fa-layer-group text-kerfRed"></i>
-                            <span>Categories: <strong class="text-white">${p.Category || 'General'}</strong></span>
+                        <p class="text-xs text-textSecondary mb-4">
+                            <i class="fa-solid fa-industry text-kerfRed mr-1"></i>
+                            <span>Suppliers & Categories:</span>
                         </p>
 
+                        <div class="space-y-2 mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder font-mono">
+                            <p class="text-white whitespace-pre-line">${p.SuppliersQueried || 'None listed'}</p>
+                        </div>
+
                         <div class="space-y-2 mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder">
-                            <div>
-                                <span class="text-textSecondary font-medium">Suppliers Queried:</span>
-                                <p class="text-white font-mono mt-0.5">${p.SuppliersQueried || 'None listed'}</p>
-                            </div>
                             ${isPurchased ? `
-                                <div class="pt-2 border-t border-kerfBorder flex justify-between items-center">
+                                <div class="flex justify-between items-center">
                                     <div>
                                         <span class="text-successGreen font-semibold">Selected Supplier:</span>
                                         <p class="text-white">${p.SelectedSupplier || 'N/A'}</p>
@@ -413,7 +422,7 @@
                                     </div>
                                 </div>
                             ` : `
-                                <div class="pt-2 border-t border-kerfBorder space-y-2">
+                                <div class="space-y-2">
                                     <p class="text-[11px] text-textSecondary italic">Capture award details upon completion:</p>
                                     <div class="grid grid-cols-2 gap-2">
                                         <input type="text" id="selSup-${p.JobID}" placeholder="Chosen Supplier" value="${p.SelectedSupplier || ''}" class="bg-kerfCard border border-kerfBorder rounded px-2 py-1 text-xs text-white">
@@ -460,41 +469,13 @@
             const container = document.getElementById('suppliersContainer');
             container.innerHTML = '';
 
-            const grouped = {};
-            suppliers.forEach(s => {
-                const cat = s.Category || 'Uncategorized';
-                if (!grouped[cat]) grouped[cat] = [];
-                grouped[cat].push(s);
-            });
-
-            const categories = Object.keys(grouped);
-            if (categories.length === 0) {
-                container.innerHTML = '<p class="text-textSecondary text-sm col-span-full">No suppliers found in database.</p>';
-                return;
-            }
-
-            categories.forEach(cat => {
+            suppliers.forEach(sup => {
                 const card = document.createElement('div');
-                card.className = "bg-kerfCard border border-kerfBorder rounded-xl p-5 shadow-xl space-y-3";
-                
-                let supplierListHtml = '';
-                grouped[cat].forEach(sup => {
-                    supplierListHtml += `
-                        <div class="bg-kerfBg p-2.5 rounded border border-kerfBorder text-xs space-y-1">
-                            <div class="font-bold text-white">${sup.SupplierName || 'Unnamed'}</div>
-                            <div class="text-textSecondary">Contact: ${sup.POCName || 'N/A'} | ${sup.POCEmail || 'N/A'}</div>
-                        </div>
-                    `;
-                });
-
+                card.className = "bg-kerfCard border border-kerfBorder rounded-xl p-5 shadow-xl space-y-2";
                 card.innerHTML = `
-                    <div class="flex items-center justify-between border-b border-kerfBorder pb-2">
-                        <h3 class="font-bold text-white text-sm uppercase tracking-wide text-kerfRed">${cat}</h3>
-                        <span class="text-xs bg-kerfBg px-2 py-0.5 rounded text-textSecondary">${grouped[cat].length}</span>
-                    </div>
-                    <div class="space-y-2 max-h-60 overflow-y-auto">
-                        ${supplierListHtml}
-                    </div>
+                    <div class="font-bold text-white text-sm">${sup.SupplierName || 'Unnamed'}</div>
+                    <div class="text-xs text-textSecondary">Capabilities: <span class="text-white">${sup.Category || 'N/A'}</span></div>
+                    <div class="text-xs text-textSecondary">Contact: ${sup.POCName || 'N/A'} | ${sup.POCEmail || 'N/A'}</div>
                 `;
                 container.appendChild(card);
             });
@@ -517,58 +498,59 @@
         function closeModal() {
             document.getElementById('projectModal').classList.add('hidden');
             document.getElementById('projectForm').reset();
-            document.getElementById('supplierCheckboxesContainer').innerHTML = '<p class="text-xs text-textSecondary italic">Select categories above to load matching suppliers.</p>';
+            document.getElementById('supplierCategoriesContainer').innerHTML = '<p class="text-xs text-textSecondary italic">Select suppliers above to configure categories for each.</p>';
         }
 
-        function populateCategoryCheckboxes() {
-            const container = document.getElementById('categoryCheckboxesContainer');
-            const categories = [...new Set(allSuppliers.map(s => s.Category).filter(Boolean))];
+        function populateSupplierCheckboxes() {
+            const container = document.getElementById('supplierCheckboxesContainer');
             
-            if (categories.length === 0) {
-                container.innerHTML = '<p class="text-xs text-textSecondary italic col-span-full">No categories found in supplier directory.</p>';
+            if (allSuppliers.length === 0) {
+                container.innerHTML = '<p class="text-xs text-textSecondary italic col-span-full">No suppliers found in directory.</p>';
                 return;
             }
 
             container.innerHTML = '';
-            categories.forEach(cat => {
+            allSuppliers.forEach(sup => {
                 const label = document.createElement('label');
                 label.className = 'flex items-center space-x-2 text-xs text-white cursor-pointer hover:text-red-400';
                 label.innerHTML = `
-                    <input type="checkbox" name="categoryCheckbox" value="${cat}" onchange="renderSupplierCheckboxesByCategories()" class="rounded bg-kerfCard border-kerfBorder text-kerfRed focus:ring-0">
-                    <span>${cat}</span>
+                    <input type="checkbox" name="supplierCheckbox" value="${sup.SupplierName}" onchange="renderSupplierCategoryInputs()" class="rounded bg-kerfCard border-kerfBorder text-kerfRed focus:ring-0">
+                    <span>${sup.SupplierName}</span>
                 `;
                 container.appendChild(label);
             });
         }
 
-        function renderSupplierCheckboxesByCategories() {
-            const checkedCategories = Array.from(document.querySelectorAll('input[name="categoryCheckbox"]:checked')).map(cb => cb.value);
-            const container = document.getElementById('supplierCheckboxesContainer');
+        function renderSupplierCategoryInputs() {
+            const checkedSuppliers = Array.from(document.querySelectorAll('input[name="supplierCheckbox"]:checked')).map(cb => cb.value);
+            const container = document.getElementById('supplierCategoriesContainer');
             container.innerHTML = '';
 
-            if (checkedCategories.length === 0) {
-                container.innerHTML = '<p class="text-xs text-textSecondary italic">Select categories above to load matching suppliers.</p>';
+            if (checkedSuppliers.length === 0) {
+                container.innerHTML = '<p class="text-xs text-textSecondary italic">Select suppliers above to configure categories for each.</p>';
                 return;
             }
 
-            checkedCategories.forEach(cat => {
-                const matchingSuppliers = allSuppliers.filter(s => s.Category === cat);
-                if (matchingSuppliers.length > 0) {
-                    const groupDiv = document.createElement('div');
-                    groupDiv.className = "space-y-1.5 pb-2 border-b border-kerfBorder last:border-0";
-                    
-                    let optionsHtml = `<p class="text-[11px] font-bold text-kerfRed uppercase">${cat}</p>`;
-                    matchingSuppliers.forEach(sup => {
-                        optionsHtml += `
-                            <label class="flex items-center space-x-2 text-xs text-white cursor-pointer hover:text-red-400 pl-2">
-                                <input type="checkbox" name="supplierCheckbox" value="${sup.SupplierName}" class="rounded bg-kerfCard border-kerfBorder text-kerfRed focus:ring-0">
-                                <span>${sup.SupplierName}</span>
-                            </label>
-                        `;
-                    });
-                    groupDiv.innerHTML = optionsHtml;
-                    container.appendChild(groupDiv);
-                }
+            checkedSuppliers.forEach((supName, index) => {
+                const rowId = `supCatInput-${index}`;
+                const datalistId = `list-${index}`;
+                
+                let datalistOptions = '';
+                allUniqueCategories.forEach(cat => {
+                    datalistOptions += `<option value="${cat}">`;
+                });
+
+                const div = document.createElement('div');
+                div.className = "bg-kerfCard p-3 rounded-lg border border-kerfBorder space-y-1.5";
+                div.innerHTML = `
+                    <label class="block text-xs font-bold text-kerfRed uppercase">${supName}</label>
+                    <input type="text" list="${datalistId}" id="${rowId}" data-supplier="${supName}" placeholder="Type or select category (e.g. Laser Cutting)" class="supplier-cat-input w-full bg-kerfBg border border-kerfBorder rounded px-3 py-2 text-xs text-white focus:outline-none">
+                    <datalist id="${datalistId}">
+                        ${datalistOptions}
+                    </datalist>
+                    <p class="text-[10px] text-textSecondary">Start typing to auto-populate from your category master list.</p>
+                `;
+                container.appendChild(div);
             });
         }
 
@@ -583,11 +565,20 @@
             const projectName = document.getElementById('modalProjectName').value;
             const folderLink = document.getElementById('modalFolderLink').value;
 
-            const categoryCheckboxes = document.querySelectorAll('input[name="categoryCheckbox"]:checked');
-            const selectedCategories = Array.from(categoryCheckboxes).map(cb => cb.value).join(', ');
+            // Collect Supplier & Category mappings
+            const catInputs = document.querySelectorAll('.supplier-cat-input');
+            let suppliersQuerySummary = [];
+            let allCategoriesList = new Set();
 
-            const supplierCheckboxes = document.querySelectorAll('input[name="supplierCheckbox"]:checked');
-            const selectedSuppliers = Array.from(supplierCheckboxes).map(cb => cb.value).join(', ');
+            catInputs.forEach(input => {
+                const supName = input.getAttribute('data-supplier');
+                const catVal = input.value.trim() || "General";
+                suppliersQuerySummary.push(`${supName} [${catVal}]`);
+                catVal.split(',').forEach(c => allCategoriesList.add(c.trim()));
+            });
+
+            const suppliersQueriedStr = suppliersQuerySummary.join(' | ');
+            const categoriesStr = Array.from(allCategoriesList).join(', ');
 
             const fileInput = document.getElementById('modalFile');
             let fileBase64 = "";
@@ -606,8 +597,8 @@
                 JobID: jobId,
                 ACNumber: acNumber,
                 ProjectName: projectName,
-                Category: selectedCategories,
-                SuppliersQueried: selectedSuppliers,
+                Category: categoriesStr,
+                SuppliersQueried: suppliersQueriedStr,
                 DriveFolderLink: folderLink,
                 fileBase64: fileBase64,
                 fileName: fileName,
