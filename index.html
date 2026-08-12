@@ -270,7 +270,7 @@
                     <input type="text" id="modalFolderLink" placeholder="https://drive.google.com/... OR \\server\share\drawings\" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none font-mono">
                     <p class="text-[11px] text-textSecondary mt-1">Leave blank if uploading files below for automatic cloud folder generation, or paste an existing link/pathway.</p>
                 </div>
-
+                
                 <!-- Direct File Upload -->
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Upload Technical Drawing / Files (Optional)</label>
@@ -400,20 +400,35 @@
                     if (diffDays > 3) isStale = true;
                 }
 
-                const linkVal = p.DriveFolderLink || "";
-                let linkHtml = '<span class="text-textSecondary">No reference attached</span>';
-                if (linkVal) {
-                    if (linkVal.startsWith('\\\\') || linkVal.startsWith('file://') || !linkVal.startsWith('http')) {
-                        linkHtml = `<span class="text-amber-400 font-mono text-[11px] truncate max-w-[200px]" title="${linkVal}"><i class="fa-solid fa-network-wired mr-1"></i>${linkVal}</span>`;
-                    } else {
-                        linkHtml = `<a href="${linkVal}" target="_blank" class="text-kerfRed hover:underline flex items-center space-x-1 font-medium"><i class="fa-solid fa-folder-tree"></i><span>View Drawings</span></a>`;
-                    }
-                }
+            // Inside your card rendering loop where card.innerHTML is defined:
+const linkVal = p.DriveFolderLink || "";
+let linkHtml = '<span class="text-textSecondary">No reference attached</span>';
+if (linkVal) {
+    if (linkVal.startsWith('\\\\') || linkVal.startsWith('file://') || !linkVal.startsWith('http')) {
+        linkHtml = `<span class="text-amber-400 font-mono text-[11px] truncate max-w-[200px]" title="${linkVal}"><i class="fa-solid fa-network-wired mr-1"></i>${linkVal}</span>`;
+    } else {
+        linkHtml = `<a href="${linkVal}" target="_blank" class="text-kerfRed hover:underline flex items-center space-x-1 font-medium"><i class="fa-solid fa-external-link-alt mr-1"></i>Open Link</a>`;
+    }
+}
 
-                const card = document.createElement('div');
-                card.className = `bg-kerfCard border rounded-xl p-5 shadow-xl flex flex-col justify-between transition relative overflow-hidden ${isStale ? 'border-amber-500/60' : 'border-kerfBorder'}`;
+// Ensure your unique ID matches your object property (e.g., p.jobId or p.JobID)
+const uniqueId = p.jobId || p.JobID || 'item';
 
-                card.innerHTML = `
+const card = document.createElement('div');
+card.className = `bg-kerfCard border rounded-xl p-5 shadow-xl flex flex-col justify-between transition relative overflow-hidden`;
+
+card.innerHTML = `
+    <!-- Other card contents go here -->
+    <div class="mb-4">
+        <span class="text-xs text-textSecondary uppercase tracking-wider block mb-1">Reference / Link</span>
+        <div class="mb-2">${linkHtml}</div>
+        <div class="link-copy-container" style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="link-${uniqueId}" value="${linkVal}" readonly class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3 py-1 text-xs text-textMain" />
+            <button type="button" onclick="copyDriveLink('link-${uniqueId}')" class="bg-kerfBorder hover:bg-kerfRed text-white px-3 py-1 rounded-lg text-xs transition">Copy</button>
+        </div>
+    </div>
+    <!-- Rest of your card template -->
+
                     <div>
                         <div class="flex items-start justify-between gap-2 mb-3">
                             <div>
@@ -750,6 +765,26 @@
                 alert("Failed to save award details.");
             }
         }
+
+        } catch (err) {
+      console.error("Error saving award details:", err);
+      alert("Failed to save award details.");
+    }
+  }
+
+  // Paste the copy function right here:
+  function copyDriveLink(elementId) {
+    var linkInput = document.getElementById(elementId);
+    if (!linkInput || !linkInput.value) return;
+    
+    navigator.clipboard.writeText(linkInput.value).then(function() {
+      console.log("Link copied successfully!");
+    }).catch(function(err) {
+      linkInput.select();
+      document.execCommand('copy');
+    });
+  }
+
     </script>
 </body>
 </html>
