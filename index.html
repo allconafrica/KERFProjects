@@ -220,7 +220,7 @@
                     <input type="text" id="modalProjectName" required placeholder="e.g. Conveyor Frame Custom Bracket" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none">
                 </div>
 
-                <!-- INCLUSIONS & EXCLUSIONS SECTION (Moved directly below project name) -->
+                <!-- INCLUSIONS & EXCLUSIONS SECTION -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-successGreen mb-1.5">
@@ -236,27 +236,22 @@
                     </div>
                 </div>
 
-                <!-- STEP 1: Searchable / Alphabetical Supplier Selector Dropdown -->
+                <!-- STEP 1: Searchable Supplier Selector Dropdown -->
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Select Suppliers Queried (RFQs Sent) *</label>
                     <div class="space-y-3 bg-kerfBg border border-kerfBorder rounded-lg p-3.5">
                         <div class="flex gap-2">
                             <input type="text" id="supplierPickerInput" list="supplierMasterList" placeholder="Type or select supplier by name (e.g. Fast Flame)..." class="w-full bg-kerfCard border border-kerfBorder rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none">
-                            <datalist id="supplierMasterList">
-                                <!-- Populated dynamically -->
-                            </datalist>
+                            <datalist id="supplierMasterList"></datalist>
                             <button type="button" onclick="addSelectedSupplier()" class="bg-kerfRed hover:bg-kerfRedHover text-white px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0">Add</button>
                         </div>
                         <p class="text-[11px] text-textSecondary">Pick from the dropdown or type to search. Suppliers will organize alphabetically.</p>
                         
-                        <!-- Selected Suppliers Tags Container -->
-                        <div id="selectedSuppliersTags" class="flex flex-wrap gap-2 pt-2 border-t border-kerfBorder hidden">
-                            <!-- Dynamically added tags -->
-                        </div>
+                        <div id="selectedSuppliersTags" class="flex flex-wrap gap-2 pt-2 border-t border-kerfBorder hidden"></div>
                     </div>
                 </div>
 
-                <!-- STEP 2: Assign Categories Per Selected Supplier with Autocomplete -->
+                <!-- STEP 2: Assign Categories Per Selected Supplier -->
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Categories Requested Per Supplier *</label>
                     <div id="supplierCategoriesContainer" class="bg-kerfBg border border-kerfBorder rounded-lg p-3.5 space-y-3">
@@ -264,7 +259,7 @@
                     </div>
                 </div>
 
-                <!-- Flexible Reference Input (Moved just above Upload Technical Drawing) -->
+                <!-- Flexible Reference Input -->
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Drive Link / Local Server Pathway (Optional)</label>
                     <input type="text" id="modalFolderLink" placeholder="https://drive.google.com/... OR \\server\share\drawings\" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none font-mono">
@@ -400,35 +395,22 @@
                     if (diffDays > 3) isStale = true;
                 }
 
-            // Inside your card rendering loop where card.innerHTML is defined:
-const linkVal = p.DriveFolderLink || "";
-let linkHtml = '<span class="text-textSecondary">No reference attached</span>';
-if (linkVal) {
-    if (linkVal.startsWith('\\\\') || linkVal.startsWith('file://') || !linkVal.startsWith('http')) {
-        linkHtml = `<span class="text-amber-400 font-mono text-[11px] truncate max-w-[200px]" title="${linkVal}"><i class="fa-solid fa-network-wired mr-1"></i>${linkVal}</span>`;
-    } else {
-        linkHtml = `<a href="${linkVal}" target="_blank" class="text-kerfRed hover:underline flex items-center space-x-1 font-medium"><i class="fa-solid fa-external-link-alt mr-1"></i>Open Link</a>`;
-    }
-}
+                const linkVal = p.DriveFolderLink || "";
+                let linkHtml = '<span class="text-textSecondary">No reference attached</span>';
+                if (linkVal) {
+                    if (linkVal.startsWith('\\\\') || linkVal.startsWith('file://') || !linkVal.startsWith('http')) {
+                        linkHtml = `<span class="text-amber-400 font-mono text-[11px] truncate max-w-[200px]" title="${linkVal}"><i class="fa-solid fa-network-wired mr-1"></i>${linkVal}</span>`;
+                    } else {
+                        linkHtml = `<a href="${linkVal}" target="_blank" class="text-kerfRed hover:underline flex items-center space-x-1 font-medium"><i class="fa-solid fa-external-link-alt mr-1"></i>Open Link</a>`;
+                    }
+                }
 
-// Ensure your unique ID matches your object property (e.g., p.jobId or p.JobID)
-const uniqueId = p.jobId || p.JobID || 'item';
+                const uniqueId = p.jobId || p.JobID || 'item';
 
-const card = document.createElement('div');
-card.className = `bg-kerfCard border rounded-xl p-5 shadow-xl flex flex-col justify-between transition relative overflow-hidden`;
+                const card = document.createElement('div');
+                card.className = `bg-kerfCard border rounded-xl p-5 shadow-xl flex flex-col justify-between transition relative overflow-hidden`;
 
-card.innerHTML = `
-    <!-- Other card contents go here -->
-    <div class="mb-4">
-        <span class="text-xs text-textSecondary uppercase tracking-wider block mb-1">Reference / Link</span>
-        <div class="mb-2">${linkHtml}</div>
-        <div class="link-copy-container" style="display: flex; gap: 8px; align-items: center;">
-            <input type="text" id="link-${uniqueId}" value="${linkVal}" readonly class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3 py-1 text-xs text-textMain" />
-            <button type="button" onclick="copyDriveLink('link-${uniqueId}')" class="bg-kerfBorder hover:bg-kerfRed text-white px-3 py-1 rounded-lg text-xs transition">Copy</button>
-        </div>
-    </div>
-    <!-- Rest of your card template -->
-
+                card.innerHTML = `
                     <div>
                         <div class="flex items-start justify-between gap-2 mb-3">
                             <div>
@@ -465,6 +447,16 @@ card.innerHTML = `
 
                         <div class="space-y-2 mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder font-mono">
                             <p class="text-white whitespace-pre-line">${p.SuppliersQueried || 'None listed'}</p>
+                        </div>
+
+                        <!-- Reference / Copy Link Section -->
+                        <div class="mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder space-y-2">
+                            <span class="text-textSecondary uppercase tracking-wider block font-semibold">Reference / Link</span>
+                            <div class="mb-1">${linkHtml}</div>
+                            <div class="link-copy-container" style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" id="link-${uniqueId}" value="${linkVal}" readonly class="w-full bg-kerfCard border border-kerfBorder rounded px-2.5 py-1 text-xs text-white" />
+                                <button type="button" onclick="copyDriveLink('link-${uniqueId}')" class="bg-kerfBorder hover:bg-kerfRed text-white px-3 py-1 rounded text-xs transition shrink-0">Copy</button>
+                            </div>
                         </div>
 
                         <div class="space-y-2 mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder">
@@ -766,25 +758,17 @@ card.innerHTML = `
             }
         }
 
-        } catch (err) {
-      console.error("Error saving award details:", err);
-      alert("Failed to save award details.");
-    }
-  }
-
-  // Paste the copy function right here:
-  function copyDriveLink(elementId) {
-    var linkInput = document.getElementById(elementId);
-    if (!linkInput || !linkInput.value) return;
-    
-    navigator.clipboard.writeText(linkInput.value).then(function() {
-      console.log("Link copied successfully!");
-    }).catch(function(err) {
-      linkInput.select();
-      document.execCommand('copy');
-    });
-  }
-
+        function copyDriveLink(elementId) {
+            var linkInput = document.getElementById(elementId);
+            if (!linkInput || !linkInput.value) return;
+            
+            navigator.clipboard.writeText(linkInput.value).then(function() {
+                console.log("Link copied successfully!");
+            }).catch(function(err) {
+                linkInput.select();
+                document.execCommand('copy');
+            });
+        }
     </script>
 </body>
 </html>
