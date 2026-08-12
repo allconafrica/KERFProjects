@@ -65,7 +65,7 @@
                 </div>
                 <div class="flex items-center space-x-2">
                     <span class="font-extrabold text-lg text-white tracking-wide">KERF Projects</span>
-                    <span class="bg-kerfRed text-white text-[10px] px-2 py-0.5 rounded font-mono font-bold shadow">V1.3 UI</span>
+                    <span class="bg-kerfRed text-white text-[10px] px-2 py-0.5 rounded font-mono font-bold shadow">V1.4 UI</span>
                 </div>
             </div>
             
@@ -255,6 +255,22 @@
                     </div>
                 </div>
 
+                <!-- INCLUSIONS & EXCLUSIONS SECTION -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-successGreen mb-1.5">
+                            <i class="fa-solid fa-circle-check mr-1"></i> Inclusions (What's included)
+                        </label>
+                        <textarea id="modalInclusions" rows="3" placeholder="e.g. Material supply, laser cutting, primer coating..." class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-kerfRed mb-1.5">
+                            <i class="fa-solid fa-circle-xmark mr-1"></i> Exclusions (What's excluded)
+                        </label>
+                        <textarea id="modalExclusions" rows="3" placeholder="e.g. Final painting, site installation, transport..." class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none"></textarea>
+                    </div>
+                </div>
+
                 <!-- Direct File Upload -->
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Upload Technical Drawing / Files (Optional)</label>
@@ -283,7 +299,7 @@
         let allProjects = [];
         let allSuppliers = [];
         let allUniqueCategories = [];
-        let selectedSuppliersList = []; // Tracks chosen suppliers for the active form
+        let selectedSuppliersList = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             loadData();
@@ -300,10 +316,8 @@
                 allProjects = data.projects || [];
                 allSuppliers = data.suppliers || [];
 
-                // Sort suppliers alphabetically by name
                 allSuppliers.sort((a, b) => (a.SupplierName || "").localeCompare(b.SupplierName || ""));
 
-                // Extract unique master categories
                 const catSet = new Set();
                 allSuppliers.forEach(s => {
                     if (s.Category) {
@@ -416,13 +430,25 @@
                         </div>
 
                         <h3 class="font-bold text-base text-white mb-1">${p.ProjectName || 'Untitled Project'}</h3>
-                        <p class="text-xs text-textSecondary mb-4">
+                        <p class="text-xs text-textSecondary mb-2">
                             <i class="fa-solid fa-industry text-kerfRed mr-1"></i>
                             <span>Suppliers & Categories:</span>
                         </p>
 
-                        <div class="space-y-2 mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder font-mono">
+                        <div class="space-y-2 mb-4 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder font-mono">
                             <p class="text-white whitespace-pre-line">${p.SuppliersQueried || 'None listed'}</p>
+                        </div>
+
+                        <!-- Inclusions & Exclusions Display Box -->
+                        <div class="grid grid-cols-2 gap-2 mb-4 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder">
+                            <div>
+                                <p class="text-successGreen font-bold mb-1"><i class="fa-solid fa-circle-check"></i> Inclusions:</p>
+                                <p class="text-textSecondary whitespace-pre-line">${p.Inclusions || 'None specified'}</p>
+                            </div>
+                            <div>
+                                <p class="text-kerfRed font-bold mb-1"><i class="fa-solid fa-circle-xmark"></i> Exclusions:</p>
+                                <p class="text-textSecondary whitespace-pre-line">${p.Exclusions || 'None specified'}</p>
+                            </div>
                         </div>
 
                         <div class="space-y-2 mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder">
@@ -538,8 +564,6 @@
             const val = input.value.trim();
             if (!val) return;
 
-            // Check if supplier exists in master or add anyway, prevent duplicates
-            const existsInMaster = allSuppliers.some(s => s.SupplierName.toLowerCase() === val.toLowerCase());
             if (!selectedSuppliersList.includes(val)) {
                 selectedSuppliersList.push(val);
                 renderSelectedSupplierTags();
@@ -620,8 +644,9 @@
             const acNumber = document.getElementById('modalAcNumber').value;
             const projectName = document.getElementById('modalProjectName').value;
             const folderLink = document.getElementById('modalFolderLink').value;
+            const inclusions = document.getElementById('modalInclusions').value;
+            const exclusions = document.getElementById('modalExclusions').value;
 
-            // Collect Supplier & Category mappings
             const catInputs = document.querySelectorAll('.supplier-cat-input');
             let suppliersQuerySummary = [];
             let allCategoriesList = new Set();
@@ -656,6 +681,8 @@
                 Category: categoriesStr,
                 SuppliersQueried: suppliersQueriedStr,
                 DriveFolderLink: folderLink,
+                Inclusions: inclusions,
+                Exclusions: exclusions,
                 fileBase64: fileBase64,
                 fileName: fileName,
                 fileMimeType: fileMimeType
