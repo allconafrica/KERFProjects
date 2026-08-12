@@ -55,7 +55,7 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
-    <!-- Top Navigation Bar matching exact KERF style -->
+    <!-- Top Navigation Bar -->
     <header class="bg-kerfBg border-b border-kerfBorder sticky top-0 z-30">
         <div class="max-w-[1700px] mx-auto px-6 h-20 flex items-center justify-between">
             <div class="flex items-center space-x-4">
@@ -69,12 +69,13 @@
                 </div>
             </div>
             
-            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
-                <button onclick="switchTab('dashboard')" id="navDashboard" class="text-white border-b-2 border-kerfRed pb-1 transition">Dashboard</button>
-                <button onclick="switchTab('suppliers')" id="navSuppliers" class="text-textSecondary hover:text-white pb-1 transition">Suppliers Directory</button>
-            </nav>
-
-            <div class="flex items-center space-x-3">
+            <!-- Navigation links moved to the right next to refresh button -->
+            <div class="flex items-center space-x-6">
+                <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
+                    <button onclick="switchTab('dashboard')" id="navDashboard" class="text-white border-b-2 border-kerfRed pb-1 transition">Dashboard</button>
+                    <button onclick="switchTab('suppliers')" id="navSuppliers" class="text-textSecondary hover:text-white pb-1 transition">Suppliers Directory</button>
+                </nav>
+                <div class="h-6 w-px bg-kerfBorder hidden md:block"></div>
                 <button onclick="loadData()" class="text-textSecondary hover:text-white p-2 rounded transition" title="Refresh Data">
                     <i class="fa-solid fa-rotate"></i>
                 </button>
@@ -87,12 +88,11 @@
 
         <!-- TAB 1: DASHBOARD VIEW -->
         <div id="viewDashboard" class="space-y-8">
-            <!-- Header Banner -->
+            <!-- Header Banner without the red-underlined description -->
             <div class="bg-kerfCard border border-kerfBorder rounded-xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div class="space-y-1">
                     <div class="inline-block bg-kerfRed text-white text-[10px] font-bold px-2.5 py-1 rounded tracking-wider uppercase mb-1 shadow">Allcon Procurement Engine</div>
                     <h2 class="text-2xl font-extrabold text-white tracking-wide">Welcome to KERF Projects</h2>
-                    <p class="text-sm text-textSecondary">Centralized workspace for active project RFQ submissions, supplier tracking, and status monitoring.</p>
                 </div>
                 <button onclick="openModal()" class="bg-kerfRed hover:bg-kerfRedHover text-white px-5 py-3 rounded-lg font-bold text-sm shadow-lg flex items-center space-x-2 transition transform hover:scale-[1.02]">
                     <i class="fa-solid fa-plus"></i>
@@ -447,7 +447,6 @@
             const container = document.getElementById('suppliersContainer');
             container.innerHTML = '';
 
-            // Group suppliers by category
             const grouped = {};
             suppliers.forEach(s => {
                 const cat = s.Category || 'Uncategorized';
