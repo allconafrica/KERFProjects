@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KERF Projects | RFQ Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                        bordercol: '#334155',
+                        accent: '#3b82f6',
+                        accenthover: '#2563eb',
+                        warningred: '#ef4444',
+                        successgreen: '#22c55e',
+                        pendingyellow: '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        /* Custom scrollbar for dark industrial feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-bordercol bg-cardbg/80 backdrop-blur sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-accent text-white font-black px-3 py-1.5 rounded tracking-wider text-lg shadow">KERF</div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide text-slate-100 uppercase">Projects Tracker</h1>
+                    <p class="text-xs text-slate-400">Procurement & RFQ Control System</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="loadData()" id="refreshBtn" class="text-slate-400 hover:text-slate-100 p-2 rounded transition" title="Refresh Data">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+                <div class="text-right hidden sm:block">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-successgreen animate-pulse mr-1"></span>
+                    <span class="text-xs text-slate-400 font-mono">LIVE SYNCED</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- Metric Summary Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+            <div class="bg-cardbg border border-bordercol rounded-xl p-5 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Projects</p>
+                    <h3 id="statTotal" class="text-3xl font-extrabold text-slate-100 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center text-blue-400 text-xl border border-bordercol">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+            </div>
+            <div class="bg-cardbg border border-bordercol rounded-xl p-5 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ongoing RFQs</p>
+                    <h3 id="statOngoing" class="text-3xl font-extrabold text-pendingyellow mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center text-pendingyellow text-xl border border-bordercol">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+            </div>
+            <div class="bg-cardbg border border-bordercol rounded-xl p-5 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Completed / Purchased</p>
+                    <h3 id="statCompleted" class="text-3xl font-extrabold text-successgreen mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center text-successgreen text-xl border border-bordercol">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search & Filter Controls -->
+        <section class="bg-cardbg border border-bordercol rounded-xl p-4 mb-8 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="relative w-full md:w-96">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="searchInput" oninput="filterProjects()" placeholder="Search AC number, project name, supplier..." class="w-full bg-slate-900 border border-bordercol rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-accent transition">
+            </div>
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+                <select id="statusFilter" onchange="filterProjects()" class="bg-slate-900 border border-bordercol rounded-lg px-4 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-accent transition">
+                    <option value="ALL">All Statuses</option>
+                    <option value="PENDING">Pending / Ongoing</option>
+                    <option value="PURCHASED">Purchased</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Loading Indicator -->
+        <div id="loadingState" class="text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-bordercol border-t-accent mb-4"></div>
+            <p class="text-slate-400 text-sm font-medium">Fetching active projects from database...</p>
+        </div>
+
+        <!-- Projects Cards Grid -->
+        <section id="projectsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <!-- Dynamically rendered project cards go here -->
+        </section>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-20 bg-cardbg border border-bordercol rounded-xl">
+            <div class="text-slate-500 text-4xl mb-3"><i class="fa-solid fa-box-open"></i></div>
+            <h3 class="text-slate-300 font-semibold text-lg">No projects found</h3>
+            <p class="text-slate-500 text-sm mt-1">Try adjusting your search query or add a new project using the + button.</p>
+        </div>
+
+    </main>
+
+    <!-- Floating Action Button ("+") -->
+    <button onclick="openModal()" class="fixed bottom-8 right-8 w-14 h-14 bg-accent hover:bg-accenthover text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition transform hover:scale-105 active:scale-95 z-40 focus:outline-none" title="Add New Project">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <!-- Submission Modal -->
+    <div id="projectModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-cardbg border border-bordercol rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex items-center justify-between border-b border-bordercol px-6 py-4 sticky top-0 bg-cardbg z-10">
+                <h3 class="font-bold text-lg text-slate-100 flex items-center space-x-2">
+                    <i class="fa-solid fa-circle-plus text-accent"></i>
+                    <span>New RFQ Project</span>
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-100 text-lg p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="projectForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Job ID *</label>
+                        <input type="text" id="modalJobId" required placeholder="e.g. JOB-1042" class="w-full bg-slate-900 border border-bordercol rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">AC Number *</label>
+                        <input type="text" id="modalAcNumber" required placeholder="e.g. AC-9821" class="w-full bg-slate-900 border border-bordercol rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-accent">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Project Name *</label>
+                    <input type="text" id="modalProjectName" required placeholder="e.g. Conveyor Frame Custom Bracket" class="w-full bg-slate-900 border border-bordercol rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-accent">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Category *</label>
+                        <select id="modalCategory" onchange="renderSupplierCheckboxes()" required class="w-full bg-slate-900 border border-bordercol rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-accent">
+                            <option value="">Select category...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Server / Drive Folder Link</label>
+                        <input type="url" id="modalFolderLink" placeholder="https://drive.google.com/..." class="w-full bg-slate-900 border border-bordercol rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-accent">
+                    </div>
+                </div>
+
+                <!-- Dynamic Multi-Select Suppliers -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Select Suppliers Queried (RFQs Sent)</label>
+                    <div id="supplierCheckboxesContainer" class="bg-slate-900 border border-bordercol rounded-lg p-3.5 max-h-40 overflow-y-auto space-y-2">
+                        <p class="text-xs text-slate-500 italic">Select a category first to load matching suppliers.</p>
+                    </div>
+                </div>
+
+                <!-- File Upload -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Upload Technical Drawing</label>
+                    <input type="file" id="modalFile" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer">
+                    <p class="text-[11px] text-slate-500 mt-1">Files route securely via Apps Script into your Google Drive repository.</p>
+                </div>
+
+                <div class="pt-4 border-t border-bordercol flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">Cancel</button>
+                    <button type="submit" id="submitBtn" class="bg-accent hover:bg-accenthover text-white px-5 py-2 rounded-lg text-sm font-semibold transition flex items-center space-x-2">
+                        <span>Save Project</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-bordercol py-6 text-center text-xs text-slate-500">
+        <p>KERF Projects &bull; Independent RFQ & Procurement Control System</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxjWH48-0yhxgrgt_fwioup42lEufkYqQONqBVquOjzw62Cjap2kT1Hn-NAdXtlY4BVsg/exec";
+
+        let allProjects = [];
+        let allSuppliers = [];
+
+        // Fetch Data on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+
+        async function loadData() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('projectsGrid').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const data = await response.json();
+                allProjects = data.projects || [];
+                allSuppliers = data.suppliers || [];
+
+                populateCategoryDropdown();
+                renderProjects(allProjects);
+                updateMetrics(allProjects);
+            } catch (err) {
+                console.error("Error loading data:", err);
+                alert("Failed to fetch data from Google Sheet backend. Please check connection.");
+            } finally {
+                document.getElementById('loadingState').classList.add('hidden');
+            }
+        }
+
+        function updateMetrics(projects) {
+            const total = projects.length;
+            let ongoing = 0;
+            let completed = 0;
+
+            projects.forEach(p => {
+                const status = (p.Status || "").toUpperCase();
+                if (status === "PURCHASED") {
+                    completed++;
+                } else {
+                    ongoing++;
+                }
+            });
+
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statOngoing').innerText = ongoing;
+            document.getElementById('statCompleted').innerText = completed;
+        }
+
+        function renderProjects(projects) {
+            const grid = document.getElementById('projectsGrid');
+            const emptyState = document.getElementById('emptyState');
+            grid.innerHTML = '';
+
+            if (projects.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            projects.forEach(p => {
+                const status = (p.Status || "Pending").toUpperCase();
+                const isPurchased = status === "PURCHASED";
+                
+                // Smart 3-day stale calculation
+                let isStale = false;
+                if (!isPurchased && p.SubmissionDate) {
+                    const subDate = new Date(p.SubmissionDate);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - subDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays > 3) isStale = true;
+                }
+
+                const card = document.createElement('div');
+                card.className = `bg-cardbg border rounded-xl p-5 shadow-sm flex flex-col justify-between transition relative overflow-hidden ${isStale ? 'border-amber-500/60' : 'border-bordercol'}`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-3">
+                            <div>
+                                <span class="text-[11px] font-mono bg-slate-800 text-slate-300 px-2 py-1 rounded border border-bordercol">${p.JobID || 'NO ID'}</span>
+                                <span class="text-[11px] font-mono bg-blue-950 text-blue-300 px-2 py-1 rounded border border-blue-900/50 ml-1.5">${p.ACNumber || 'NO AC'}</span>
+                            </div>
+                            <div class="flex items-center space-x-1.5">
+                                ${isStale ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center space-x-1"><i class="fa-solid fa-triangle-exclamation"></i><span>+3 Days Idle</span></span>' : ''}
+                                <select onchange="updateProjectStatus('${p.JobID}', this.value)" class="text-xs font-semibold px-2.5 py-1 rounded border transition cursor-pointer ${isPurchased ? 'bg-successgreen/20 text-successgreen border-successgreen/30' : 'bg-pendingyellow/20 text-pendingyellow border-pendingyellow/30'}">
+                                    <option value="Pending" ${status !== 'PURCHASED' ? 'selected' : ''}>Pending / Ongoing</option>
+                                    <option value="Purchased" ${isPurchased ? 'selected' : ''}>Purchased</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-base text-slate-100 mb-1">${p.ProjectName || 'Untitled Project'}</h3>
+                        <p class="text-xs text-slate-400 mb-4 flex items-center space-x-1">
+                            <i class="fa-solid fa-layer-group text-slate-500"></i>
+                            <span>Category: <strong class="text-slate-300">${p.Category || 'General'}</strong></span>
+                        </p>
+
+                        <div class="space-y-2 mb-5 text-xs bg-slate-900/60 p-3 rounded-lg border border-bordercol/50">
+                            <div>
+                                <span class="text-slate-500 font-medium">Suppliers Queried:</span>
+                                <p class="text-slate-300 font-mono mt-0.5">${p.SuppliersQueried || 'None listed'}</p>
+                            </div>
+                            ${isPurchased ? `
+                                <div class="pt-2 border-t border-bordercol/50 flex justify-between items-center">
+                                    <div>
+                                        <span class="text-successgreen font-semibold">Selected Supplier:</span>
+                                        <p class="text-slate-200">${p.SelectedSupplier || 'N/A'}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-successgreen font-semibold">PO Number:</span>
+                                        <p class="text-slate-200 font-mono">${p.PONumber || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div id="purchaseSection-${p.JobID}" class="pt-2 border-t border-bordercol/50 space-y-2">
+                                    <p class="text-[11px] text-slate-400 italic">Capture final supplier & PO upon award:</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="text" id="selSup-${p.JobID}" placeholder="Chosen Supplier" value="${p.SelectedSupplier || ''}" class="bg-slate-900 border border-bordercol rounded px-2 py-1 text-xs text-slate-200">
+                                        <input type="text" id="poNum-${p.JobID}" placeholder="PO Number" value="${p.PONumber || ''}" class="bg-slate-900 border border-bordercol rounded px-2 py-1 text-xs text-slate-200 font-mono">
+                                    </div>
+                                    <button onclick="savePurchaseDetails('${p.JobID}')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 rounded py-1 text-[11px] font-semibold transition border border-bordercol">Save Award Details</button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-bordercol flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Submitted: ${p.SubmissionDate ? p.SubmissionDate.split('T')[0] : 'N/A'}</span>
+                        ${p.DriveFolderLink ? `<a href="${p.DriveFolderLink}" target="_blank" class="text-accent hover:underline flex items-center space-x-1 font-medium"><i class="fa-solid fa-folder-tree"></i><span>View Drawings</span></a>` : '<span class="text-slate-600">No folder attached</span>'}
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function filterProjects() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const filtered = allProjects.filter(p => {
+                const ac = (p.ACNumber || "").toLowerCase();
+                const name = (p.ProjectName || "").toLowerCase();
+                const sup = (p.SuppliersQueried || "").toLowerCase();
+                const status = (p.Status || "Pending").toUpperCase();
+
+                const matchesQuery = ac.includes(query) || name.includes(query) || sup.includes(query);
+                
+                let matchesStatus = true;
+                if (statusFilter === "PENDING") {
+                    matchesStatus = status !== "PURCHASED";
+                } else if (statusFilter === "PURCHASED") {
+                    matchesStatus = status === "PURCHASED";
+                }
+
+                return matchesQuery && matchesStatus;
+            });
+
+            renderProjects(filtered);
+        }
+
+        // Modal Functions
+        function openModal() {
+            document.getElementById('projectModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('projectModal').classList.add('hidden');
+            document.getElementById('projectForm').reset();
+            document.getElementById('supplierCheckboxesContainer').innerHTML = '<p class="text-xs text-slate-500 italic">Select a category first to load matching suppliers.</p>';
+        }
+
+        function populateCategoryDropdown() {
+            const catSelect = document.getElementById('modalCategory');
+            // Extract unique categories from suppliers list
+            const categories = [...new Set(allSuppliers.map(s => s.Category).filter(Boolean))];
+            
+            catSelect.innerHTML = '<option value="">Select category...</option>';
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                catSelect.appendChild(opt);
+            });
+        }
+
+        function renderSupplierCheckboxes() {
+            const selectedCat = document.getElementById('modalCategory').value;
+            const container = document.getElementById('supplierCheckboxesContainer');
+            container.innerHTML = '';
+
+            const matchingSuppliers = allSuppliers.filter(s => s.Category === selectedCat);
+
+            if (matchingSuppliers.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 italic">No suppliers found for this category in master list.</p>';
+                return;
+            }
+
+            matchingSuppliers.forEach(sup => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 text-xs text-slate-300 cursor-pointer hover:text-white';
+                label.innerHTML = `
+                    <input type="checkbox" name="supplierCheckbox" value="${sup.SupplierName}" class="rounded bg-slate-800 border-bordercol text-accent focus:ring-0">
+                    <span>${sup.SupplierName}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Saving...";
+
+            const jobId = document.getElementById('modalJobId').value;
+            const acNumber = document.getElementById('modalAcNumber').value;
+            const projectName = document.getElementById('modalProjectName').value;
+            const category = document.getElementById('modalCategory').value;
+            const folderLink = document.getElementById('modalFolderLink').value;
+
+            // Gather checked suppliers
+            const checkboxes = document.querySelectorAll('input[name="supplierCheckbox"]:checked');
+            const selectedSuppliers = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
+            // File handling
+            const fileInput = document.getElementById('modalFile');
+            let fileBase64 = "";
+            let fileName = "";
+            let fileMimeType = "";
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName = file.name;
+                fileMimeType = file.type;
+                fileBase64 = await toBase64(file);
+            }
+
+            const payload = {
+                action: "create",
+                JobID: jobId,
+                ACNumber: acNumber,
+                ProjectName: projectName,
+                Category: category,
+                SuppliersQueried: selectedSuppliers,
+                DriveFolderLink: folderLink,
+                fileBase64: fileBase64,
+                fileName: fileName,
+                fileMimeType: fileMimeType
+            };
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                closeModal();
+                loadData();
+            } catch (err) {
+                console.error("Error creating project:", err);
+                alert("Failed to save project.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Save Project";
+            }
+        }
+
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+
+        async function updateProjectStatus(jobId, newStatus) {
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "update",
+                        JobID: jobId,
+                        Status: newStatus
+                    })
+                });
+                loadData();
+            } catch (err) {
+                console.error("Error updating status:", err);
+                alert("Failed to update status.");
+            }
+        }
+
+        async function savePurchaseDetails(jobId) {
+            const selSup = document.getElementById(`selSup-${jobId}`).value;
+            const poNum = document.getElementById(`poNum-${jobId}`).value;
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "update",
+                        JobID: jobId,
+                        Status: "Purchased",
+                        SelectedSupplier: selSup,
+                        PONumber: poNum
+                    })
+                });
+                loadData();
+            } catch (err) {
+                console.error("Error saving award details:", err);
+                alert("Failed to save award details.");
+            }
+        }
+    </script>
+</body>
+</html>
