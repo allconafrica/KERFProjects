@@ -65,7 +65,7 @@
                 </div>
                 <div class="flex items-center space-x-2">
                     <span class="font-extrabold text-lg text-white tracking-wide">KERF Projects</span>
-                    <span class="bg-kerfRed text-white text-[10px] px-2 py-0.5 rounded font-mono font-bold shadow">V1.2 UI</span>
+                    <span class="bg-kerfRed text-white text-[10px] px-2 py-0.5 rounded font-mono font-bold shadow">V1.3 UI</span>
                 </div>
             </div>
             
@@ -227,11 +227,23 @@
                     <p class="text-[11px] text-textSecondary mt-1">Leave blank if uploading files below for automatic cloud folder generation, or paste an existing link/pathway.</p>
                 </div>
 
-                <!-- STEP 1: Select Suppliers First -->
+                <!-- STEP 1: Searchable / Alphabetical Supplier Selector Dropdown -->
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Select Suppliers Queried (RFQs Sent) *</label>
-                    <div id="supplierCheckboxesContainer" class="bg-kerfBg border border-kerfBorder rounded-lg p-3.5 max-h-40 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <p class="text-xs text-textSecondary italic col-span-full">Loading suppliers...</p>
+                    <div class="space-y-3 bg-kerfBg border border-kerfBorder rounded-lg p-3.5">
+                        <div class="flex gap-2">
+                            <input type="text" id="supplierPickerInput" list="supplierMasterList" placeholder="Type or select supplier by name (e.g. Fast Flame)..." class="w-full bg-kerfCard border border-kerfBorder rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none">
+                            <datalist id="supplierMasterList">
+                                <!-- Populated dynamically -->
+                            </datalist>
+                            <button type="button" onclick="addSelectedSupplier()" class="bg-kerfRed hover:bg-kerfRedHover text-white px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0">Add</button>
+                        </div>
+                        <p class="text-[11px] text-textSecondary">Pick from the dropdown or type to search. Suppliers will organize alphabetically.</p>
+                        
+                        <!-- Selected Suppliers Tags Container -->
+                        <div id="selectedSuppliersTags" class="flex flex-wrap gap-2 pt-2 border-t border-kerfBorder hidden">
+                            <!-- Dynamically added tags -->
+                        </div>
                     </div>
                 </div>
 
@@ -239,7 +251,7 @@
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Categories Requested Per Supplier *</label>
                     <div id="supplierCategoriesContainer" class="bg-kerfBg border border-kerfBorder rounded-lg p-3.5 space-y-3">
-                        <p class="text-xs text-textSecondary italic">Select suppliers above to configure categories for each.</p>
+                        <p class="text-xs text-textSecondary italic">Add suppliers above to configure categories for each.</p>
                     </div>
                 </div>
 
@@ -271,6 +283,7 @@
         let allProjects = [];
         let allSuppliers = [];
         let allUniqueCategories = [];
+        let selectedSuppliersList = []; // Tracks chosen suppliers for the active form
 
         window.addEventListener('DOMContentLoaded', () => {
             loadData();
@@ -287,7 +300,10 @@
                 allProjects = data.projects || [];
                 allSuppliers = data.suppliers || [];
 
-                // Extract unique master categories from supplier list or predefined pool
+                // Sort suppliers alphabetically by name
+                allSuppliers.sort((a, b) => (a.SupplierName || "").localeCompare(b.SupplierName || ""));
+
+                // Extract unique master categories
                 const catSet = new Set();
                 allSuppliers.forEach(s => {
                     if (s.Category) {
@@ -296,7 +312,7 @@
                 });
                 allUniqueCategories = Array.from(catSet).sort();
 
-                populateSupplierCheckboxes();
+                populateSupplierDatalist();
                 renderProjects(allProjects);
                 updateMetrics(allProjects);
                 renderSuppliersDirectory(allSuppliers);
@@ -473,7 +489,10 @@
                 const card = document.createElement('div');
                 card.className = "bg-kerfCard border border-kerfBorder rounded-xl p-5 shadow-xl space-y-2";
                 card.innerHTML = `
-                    <div class="font-bold text-white text-sm">${sup.SupplierName || 'Unnamed'}</div>
+                    <div class="font-bold text-white text-sm flex items-center justify-between">
+                        <span>${sup.SupplierName || 'Unnamed'}</span>
+                        <span class="text-[10px] font-mono bg-kerfBg px-2 py-0.5 rounded border border-kerfBorder text-kerfRed">${(sup.SupplierName || "")[0].toUpperCase()}</span>
+                    </div>
                     <div class="text-xs text-textSecondary">Capabilities: <span class="text-white">${sup.Category || 'N/A'}</span></div>
                     <div class="text-xs text-textSecondary">Contact: ${sup.POCName || 'N/A'} | ${sup.POCEmail || 'N/A'}</div>
                 `;
@@ -498,42 +517,76 @@
         function closeModal() {
             document.getElementById('projectModal').classList.add('hidden');
             document.getElementById('projectForm').reset();
-            document.getElementById('supplierCategoriesContainer').innerHTML = '<p class="text-xs text-textSecondary italic">Select suppliers above to configure categories for each.</p>';
+            selectedSuppliersList = [];
+            renderSelectedSupplierTags();
+            document.getElementById('supplierCategoriesContainer').innerHTML = '<p class="text-xs text-textSecondary italic">Add suppliers above to configure categories for each.</p>';
         }
 
-        function populateSupplierCheckboxes() {
-            const container = document.getElementById('supplierCheckboxesContainer');
-            
-            if (allSuppliers.length === 0) {
-                container.innerHTML = '<p class="text-xs text-textSecondary italic col-span-full">No suppliers found in directory.</p>';
+        function populateSupplierDatalist() {
+            const list = document.getElementById('supplierMasterList');
+            list.innerHTML = '';
+
+            allSuppliers.forEach(sup => {
+                const option = document.createElement('option');
+                option.value = sup.SupplierName;
+                list.appendChild(option);
+            });
+        }
+
+        function addSelectedSupplier() {
+            const input = document.getElementById('supplierPickerInput');
+            const val = input.value.trim();
+            if (!val) return;
+
+            // Check if supplier exists in master or add anyway, prevent duplicates
+            const existsInMaster = allSuppliers.some(s => s.SupplierName.toLowerCase() === val.toLowerCase());
+            if (!selectedSuppliersList.includes(val)) {
+                selectedSuppliersList.push(val);
+                renderSelectedSupplierTags();
+                renderSupplierCategoryInputs();
+            }
+            input.value = '';
+        }
+
+        function removeSelectedSupplier(supName) {
+            selectedSuppliersList = selectedSuppliersList.filter(s => s !== supName);
+            renderSelectedSupplierTags();
+            renderSupplierCategoryInputs();
+        }
+
+        function renderSelectedSupplierTags() {
+            const container = document.getElementById('selectedSuppliersTags');
+            container.innerHTML = '';
+
+            if (selectedSuppliersList.length === 0) {
+                container.classList.add('hidden');
                 return;
             }
 
-            container.innerHTML = '';
-            allSuppliers.forEach(sup => {
-                const label = document.createElement('label');
-                label.className = 'flex items-center space-x-2 text-xs text-white cursor-pointer hover:text-red-400';
-                label.innerHTML = `
-                    <input type="checkbox" name="supplierCheckbox" value="${sup.SupplierName}" onchange="renderSupplierCategoryInputs()" class="rounded bg-kerfCard border-kerfBorder text-kerfRed focus:ring-0">
-                    <span>${sup.SupplierName}</span>
+            container.classList.remove('hidden');
+            selectedSuppliersList.forEach(supName => {
+                const tag = document.createElement('div');
+                tag.className = "flex items-center space-x-1.5 bg-kerfBg border border-kerfBorder text-white px-3 py-1 rounded-full text-xs font-medium";
+                tag.innerHTML = `
+                    <span>${supName}</span>
+                    <button type="button" onclick="removeSelectedSupplier('${supName}')" class="text-textSecondary hover:text-kerfRed ml-1"><i class="fa-solid fa-xmark"></i></button>
                 `;
-                container.appendChild(label);
+                container.appendChild(tag);
             });
         }
 
         function renderSupplierCategoryInputs() {
-            const checkedSuppliers = Array.from(document.querySelectorAll('input[name="supplierCheckbox"]:checked')).map(cb => cb.value);
             const container = document.getElementById('supplierCategoriesContainer');
             container.innerHTML = '';
 
-            if (checkedSuppliers.length === 0) {
-                container.innerHTML = '<p class="text-xs text-textSecondary italic">Select suppliers above to configure categories for each.</p>';
+            if (selectedSuppliersList.length === 0) {
+                container.innerHTML = '<p class="text-xs text-textSecondary italic">Add suppliers above to configure categories for each.</p>';
                 return;
             }
 
-            checkedSuppliers.forEach((supName, index) => {
+            selectedSuppliersList.forEach((supName, index) => {
                 const rowId = `supCatInput-${index}`;
-                const datalistId = `list-${index}`;
+                const datalistId = `cat-list-${index}`;
                 
                 let datalistOptions = '';
                 allUniqueCategories.forEach(cat => {
@@ -543,7 +596,10 @@
                 const div = document.createElement('div');
                 div.className = "bg-kerfCard p-3 rounded-lg border border-kerfBorder space-y-1.5";
                 div.innerHTML = `
-                    <label class="block text-xs font-bold text-kerfRed uppercase">${supName}</label>
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-kerfRed uppercase">${supName}</label>
+                        <span class="text-[10px] font-mono text-textSecondary">Letter: ${(supName[0] || '').toUpperCase()}</span>
+                    </div>
                     <input type="text" list="${datalistId}" id="${rowId}" data-supplier="${supName}" placeholder="Type or select category (e.g. Laser Cutting)" class="supplier-cat-input w-full bg-kerfBg border border-kerfBorder rounded px-3 py-2 text-xs text-white focus:outline-none">
                     <datalist id="${datalistId}">
                         ${datalistOptions}
