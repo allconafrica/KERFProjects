@@ -397,15 +397,35 @@
 
                 const linkVal = p.DriveFolderLink || "";
                 let linkHtml = '<span class="text-textSecondary">No reference attached</span>';
+                const uniqueId = p.jobId || p.JobID || 'item';
+
                 if (linkVal) {
                     if (linkVal.startsWith('\\\\') || linkVal.startsWith('file://') || !linkVal.startsWith('http')) {
-                        linkHtml = `<span class="text-amber-400 font-mono text-[11px] truncate max-w-[200px]" title="${linkVal}"><i class="fa-solid fa-network-wired mr-1"></i>${linkVal}</span>`;
+                        linkHtml = `
+                            <div class="flex items-center space-x-2 max-w-full">
+                                <span class="text-amber-400 font-mono text-[11px] truncate" title="${linkVal}">
+                                    <i class="fa-solid fa-network-wired mr-1"></i>${linkVal}
+                                </span>
+                                <input type="text" id="link-${uniqueId}" value="${linkVal}" class="hidden" />
+                                <button type="button" onclick="copyDriveLink('link-${uniqueId}')" class="bg-kerfBorder hover:bg-kerfRed text-white px-2 py-0.5 rounded text-[10px] transition shrink-0" title="Copy Link">
+                                    <i class="fa-solid fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        `;
                     } else {
-                        linkHtml = `<a href="${linkVal}" target="_blank" class="text-kerfRed hover:underline flex items-center space-x-1 font-medium"><i class="fa-solid fa-external-link-alt mr-1"></i>Open Link</a>`;
+                        linkHtml = `
+                            <div class="flex items-center space-x-2 max-w-full">
+                                <a href="${linkVal}" target="_blank" class="text-kerfRed hover:underline flex items-center space-x-1 font-medium truncate text-xs">
+                                    <i class="fa-solid fa-external-link-alt mr-1"></i><span class="truncate">${linkVal}</span>
+                                </a>
+                                <input type="text" id="link-${uniqueId}" value="${linkVal}" class="hidden" />
+                                <button type="button" onclick="copyDriveLink('link-${uniqueId}')" class="bg-kerfBorder hover:bg-kerfRed text-white px-2 py-0.5 rounded text-[10px] transition shrink-0" title="Copy Link">
+                                    <i class="fa-solid fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        `;
                     }
                 }
-
-                const uniqueId = p.jobId || p.JobID || 'item';
 
                 const card = document.createElement('div');
                 card.className = `bg-kerfCard border rounded-xl p-5 shadow-xl flex flex-col justify-between transition relative overflow-hidden`;
@@ -449,16 +469,6 @@
                             <p class="text-white whitespace-pre-line">${p.SuppliersQueried || 'None listed'}</p>
                         </div>
 
-                        <!-- Reference / Copy Link Section -->
-                        <div class="mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder space-y-2">
-                            <span class="text-textSecondary uppercase tracking-wider block font-semibold">Reference / Link</span>
-                            <div class="mb-1">${linkHtml}</div>
-                            <div class="link-copy-container" style="display: flex; gap: 8px; align-items: center;">
-                                <input type="text" id="link-${uniqueId}" value="${linkVal}" readonly class="w-full bg-kerfCard border border-kerfBorder rounded px-2.5 py-1 text-xs text-white" />
-                                <button type="button" onclick="copyDriveLink('link-${uniqueId}')" class="bg-kerfBorder hover:bg-kerfRed text-white px-3 py-1 rounded text-xs transition shrink-0">Copy</button>
-                            </div>
-                        </div>
-
                         <div class="space-y-2 mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder">
                             ${isPurchased ? `
                                 <div class="flex justify-between items-center">
@@ -486,7 +496,7 @@
 
                     <div class="pt-3 border-t border-kerfBorder flex items-center justify-between text-xs">
                         <span class="text-textSecondary">Submitted: ${p.SubmissionDate ? p.SubmissionDate.split('T')[0] : 'N/A'}</span>
-                        ${linkHtml}
+                        <div class="truncate ml-2">${linkHtml}</div>
                     </div>
                 `;
 
