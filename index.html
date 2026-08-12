@@ -220,11 +220,11 @@
                     <input type="text" id="modalProjectName" required placeholder="e.g. Conveyor Frame Custom Bracket" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none">
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Server / Drive Folder Link</label>
-                        <input type="url" id="modalFolderLink" placeholder="https://drive.google.com/..." class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none">
-                    </div>
+                <!-- Flexible Reference Input: Supports Google Drive Link or Local Network Server Pathway (e.g., \\server\share\) -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Drive Link / Local Server Pathway (Optional)</label>
+                    <input type="text" id="modalFolderLink" placeholder="https://drive.google.com/... OR \\server\share\drawings\" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none font-mono">
+                    <p class="text-[11px] text-textSecondary mt-1">Leave blank if uploading files below for automatic cloud folder generation, or paste an existing link/pathway.</p>
                 </div>
 
                 <!-- Multi-Select Categories Section -->
@@ -243,8 +243,9 @@
                     </div>
                 </div>
 
+                <!-- Direct File Upload (Auto-Uploads to Drive if no manual link provided) -->
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Upload Technical Drawing</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Upload Technical Drawing / Files (Optional)</label>
                     <input type="file" id="modalFile" class="w-full text-sm text-textSecondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-kerfBg file:text-white hover:file:bg-kerfBorder cursor-pointer border border-kerfBorder rounded-lg">
                 </div>
 
@@ -359,6 +360,17 @@
                     if (diffDays > 3) isStale = true;
                 }
 
+                // Check if folder link is a local path or a URL
+                const linkVal = p.DriveFolderLink || "";
+                let linkHtml = '<span class="text-textSecondary">No reference attached</span>';
+                if (linkVal) {
+                    if (linkVal.startsWith('\\\\') || linkVal.startsWith('file://') || !linkVal.startsWith('http')) {
+                        linkHtml = `<span class="text-amber-400 font-mono text-[11px] truncate max-w-[200px]" title="${linkVal}"><i class="fa-solid fa-network-wired mr-1"></i>${linkVal}</span>`;
+                    } else {
+                        linkHtml = `<a href="${linkVal}" target="_blank" class="text-kerfRed hover:underline flex items-center space-x-1 font-medium"><i class="fa-solid fa-folder-tree"></i><span>View Drawings</span></a>`;
+                    }
+                }
+
                 const card = document.createElement('div');
                 card.className = `bg-kerfCard border rounded-xl p-5 shadow-xl flex flex-col justify-between transition relative overflow-hidden ${isStale ? 'border-amber-500/60' : 'border-kerfBorder'}`;
 
@@ -415,7 +427,7 @@
 
                     <div class="pt-3 border-t border-kerfBorder flex items-center justify-between text-xs">
                         <span class="text-textSecondary">Submitted: ${p.SubmissionDate ? p.SubmissionDate.split('T')[0] : 'N/A'}</span>
-                        ${p.DriveFolderLink ? `<a href="${p.DriveFolderLink}" target="_blank" class="text-kerfRed hover:underline flex items-center space-x-1 font-medium"><i class="fa-solid fa-folder-tree"></i><span>View Drawings</span></a>` : '<span class="text-textSecondary">No folder attached</span>'}
+                        ${linkHtml}
                     </div>
                 `;
 
