@@ -11,16 +11,15 @@
             theme: {
                 extend: {
                     colors: {
-                        kerf-bg: '#141414', // Deep black background
-                        kerf-card: '#1f1f1f', // Slightly lighter dark grey for cards
-                        kerf-border: '#333333', // Dark border
-                        kerf-red: '#e53e3e', // Signature red for accents/buttons
-                        kerf-red-hover: '#c53030',
-                        kerf-text-primary: '#f7fafc',
-                        kerf-text-secondary: '#a0aec0',
-                        warningred: '#ef4444',
-                        successgreen: '#48bb78',
-                        pendingyellow: '#ecc94b'
+                        kerfBg: '#121212',
+                        kerfCard: '#1a1a1a',
+                        kerfBorder: '#2c2c2c',
+                        kerfRed: '#cc2929',
+                        kerfRedHover: '#b52424',
+                        textPrimary: '#ffffff',
+                        textSecondary: '#9ca3af',
+                        successGreen: '#22c55e',
+                        pendingYellow: '#f59e0b'
                     }
                 }
             }
@@ -30,67 +29,53 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background-color: #141414;
-            color: #f7fafc;
-            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        /* Custom scrollbar for dark industrial feel */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #141414;
+            background: #121212;
         }
         ::-webkit-scrollbar-thumb {
-            background: #333333;
+            background: #2c2c2c;
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #4a4a4a;
+            background: #3f3f3f;
         }
-        /* Input/Select Focus overrides to match red theme */
         input:focus, select:focus, textarea:focus {
-            --tw-ring-color: #e53e3e !important;
-            border-color: #e53e3e !important;
-        }
-        /* Checkbox color override */
-        input[type="checkbox"]:checked {
-            background-color: #e53e3e;
-            border-color: #e53e3e;
+            border-color: #cc2929 !important;
+            outline: none;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-kerf-red/50 selection:text-white">
+<body class="min-h-screen flex flex-col justify-between">
 
-    <!-- Top Navigation Bar -->
-    <header class="border-b border-kerf-border bg-kerf-bg sticky top-0 z-30">
+    <!-- Top Navigation Bar matching exact KERF style -->
+    <header class="bg-kerfBg border-b border-kerfBorder sticky top-0 z-30">
         <div class="max-w-[1700px] mx-auto px-6 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <!-- KERF Logo Area Styled like sample -->
-                <div class="flex items-center">
-                    <span class="bg-white text-kerf-red font-black px-3 py-1 rounded-l text-sm tracking-tighter">ALLCON</span>
-                    <span class="bg-kerf-red text-white font-bold px-3 py-1 rounded-r text-sm border-l border-red-800">FABRICATION & ENGINEERING</span>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center shadow-md rounded overflow-hidden border border-red-900/50">
+                    <span class="bg-white text-kerfRed font-black px-2.5 py-1 text-xs tracking-tighter">ALLCON</span>
+                    <span class="bg-kerfRed text-white font-bold px-2.5 py-1 text-[10px] tracking-wider uppercase">Fabrication & Engineering</span>
                 </div>
-                <div class="h-6 w-px bg-kerf-border"></div>
-                <div class="flex items-center gap-2">
-                    <h1 class="font-bold text-xl tracking-wide text-white">KERF Projects</h1>
-                    <span class="bg-kerf-red text-white text-[10px] px-2 py-0.5 rounded font-mono font-bold">V1.0 UI</span>
+                <div class="flex items-center space-x-2">
+                    <span class="font-extrabold text-lg text-white tracking-wide">KERF Projects</span>
+                    <span class="bg-kerfRed text-white text-[10px] px-2 py-0.5 rounded font-mono font-bold shadow">V1.0 UI</span>
                 </div>
             </div>
             
-            <!-- Top Nav Links -->
-            <nav class="flex items-center gap-6 text-sm text-kerf-text-secondary">
-                <a href="#" class="text-kerf-text-primary font-medium">Dashboard</a>
-                <a href="#" class="hover:text-kerf-text-primary">Project Transmittal</a>
-                <a href="#" class="hover:text-kerf-text-primary">BOM Calculator</a>
-                <a href="#" class="hover:text-kerf-text-primary">RFQ Generator</a>
-                <a href="#" class="hover:text-kerf-text-primary">Suppliers</a>
-                <a href="#" class="hover:text-kerf-text-primary">Staff</a>
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                <button onclick="switchTab('dashboard')" id="navDashboard" class="text-white border-b-2 border-kerfRed pb-1 transition">Dashboard</button>
+                <button onclick="switchTab('suppliers')" id="navSuppliers" class="text-textSecondary hover:text-white pb-1 transition">Suppliers Directory</button>
             </nav>
 
-            <div class="flex items-center space-x-4">
-                <button onclick="loadData()" id="refreshBtn" class="text-kerf-text-secondary hover:text-kerf-text-primary p-2 rounded transition" title="Refresh Data">
+            <div class="flex items-center space-x-3">
+                <button onclick="loadData()" class="text-textSecondary hover:text-white p-2 rounded transition" title="Refresh Data">
                     <i class="fa-solid fa-rotate"></i>
                 </button>
             </div>
@@ -98,139 +83,568 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-[1700px] mx-auto px-6 py-10 flex-grow w-full">
+    <main class="max-w-[1700px] mx-auto px-6 py-8 flex-grow w-full">
 
-        <!-- Section Header: Quick Access -->
-        <div class="flex items-center gap-3 mb-6">
-            <div class="p-2 rounded bg-kerf-card border border-kerf-border text-kerf-red">
-                <i class="fa-solid fa-grip"></i>
+        <!-- TAB 1: DASHBOARD VIEW -->
+        <div id="viewDashboard" class="space-y-8">
+            <!-- Header Banner -->
+            <div class="bg-kerfCard border border-kerfBorder rounded-xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="inline-block bg-kerfRed text-white text-[10px] font-bold px-2.5 py-1 rounded tracking-wider uppercase mb-1 shadow">Allcon Procurement Engine</div>
+                    <h2 class="text-2xl font-extrabold text-white tracking-wide">Welcome to KERF Projects</h2>
+                    <p class="text-sm text-textSecondary">Centralized workspace for active project RFQ submissions, supplier tracking, and status monitoring.</p>
+                </div>
+                <button onclick="openModal()" class="bg-kerfRed hover:bg-kerfRedHover text-white px-5 py-3 rounded-lg font-bold text-sm shadow-lg flex items-center space-x-2 transition transform hover:scale-[1.02]">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>New Project / RFQ</span>
+                </button>
             </div>
-            <h2 class="text-xl font-bold text-kerf-text-primary uppercase tracking-wider">ACTIVE PROJECTS DASHBOARD</h2>
+
+            <!-- Metric Summary Cards -->
+            <section class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div class="bg-kerfCard border border-kerfBorder rounded-xl p-6 shadow-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-textSecondary uppercase tracking-wider">Total Projects</p>
+                        <h3 id="statTotal" class="text-3xl font-black text-white mt-1">0</h3>
+                        <p class="text-xs text-kerfRed mt-2 flex items-center space-x-1"><i class="fa-solid fa-rotate text-[10px]"></i><span>Syncing Sheets</span></p>
+                    </div>
+                    <div class="w-14 h-14 rounded-xl bg-kerfBg border border-kerfBorder flex items-center justify-center text-kerfRed text-2xl shadow-inner">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                </div>
+                <div class="bg-kerfCard border border-kerfBorder rounded-xl p-6 shadow-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-textSecondary uppercase tracking-wider">Ongoing RFQs</p>
+                        <h3 id="statOngoing" class="text-3xl font-black text-pendingYellow mt-1">0</h3>
+                        <p class="text-xs text-textSecondary mt-2">Awaiting supplier feedback</p>
+                    </div>
+                    <div class="w-14 h-14 rounded-xl bg-kerfBg border border-kerfBorder flex items-center justify-center text-pendingYellow text-2xl shadow-inner">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                </div>
+                <div class="bg-kerfCard border border-kerfBorder rounded-xl p-6 shadow-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-textSecondary uppercase tracking-wider">Completed / Purchased</p>
+                        <h3 id="statCompleted" class="text-3xl font-black text-successGreen mt-1">0</h3>
+                        <p class="text-xs text-textSecondary mt-2">Finalized orders</p>
+                    </div>
+                    <div class="w-14 h-14 rounded-xl bg-kerfBg border border-kerfBorder flex items-center justify-center text-successGreen text-2xl shadow-inner">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search & Filter Controls -->
+            <section class="bg-kerfCard border border-kerfBorder rounded-xl p-5 shadow-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="relative w-full md:w-96">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-textSecondary">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="searchInput" oninput="filterProjects()" placeholder="Search AC number, project name, supplier..." class="w-full bg-kerfBg border border-kerfBorder rounded-lg pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none transition">
+                </div>
+                <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+                    <select id="statusFilter" onchange="filterProjects()" class="bg-kerfBg border border-kerfBorder rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none transition">
+                        <option value="ALL">All Statuses</option>
+                        <option value="PENDING">Pending / Ongoing</option>
+                        <option value="PURCHASED">Purchased</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Loading Indicator -->
+            <div id="loadingState" class="text-center py-20">
+                <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-kerfBorder border-t-kerfRed mb-4"></div>
+                <p class="text-textSecondary text-sm font-medium">Loading project database...</p>
+            </div>
+
+            <!-- Projects Cards Grid -->
+            <section id="projectsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+                <!-- Dynamically rendered project cards go here -->
+            </section>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-20 bg-kerfCard border border-kerfBorder rounded-xl shadow-xl">
+                <div class="text-textSecondary text-4xl mb-3"><i class="fa-solid fa-box-open"></i></div>
+                <h3 class="text-white font-semibold text-lg">No active projects found</h3>
+                <p class="text-textSecondary text-sm mt-1">Click the + button to create a new project submission.</p>
+            </div>
         </div>
 
-        <!-- Metric Summary Cards -->
-        <section class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-            <!-- Metric 1 -->
-            <div class="bg-kerf-card border border-kerf-border rounded-lg p-6 shadow-lg flex items-center justify-between hover:border-kerf-red/30 transition group">
+        <!-- TAB 2: SUPPLIERS DIRECTORY VIEW -->
+        <div id="viewSuppliers" class="space-y-6 hidden">
+            <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-kerf-text-secondary uppercase tracking-wider">Total Projects</p>
-                    <h3 id="statTotal" class="text-4xl font-extrabold text-kerf-text-primary mt-2">0</h3>
-                    <p class="text-xs text-kerf-red mt-2 flex items-center gap-1.5"><i class="fa-solid fa-sync text-[10px]"></i> Syncing Sheets</p>
+                    <h2 class="text-xl font-extrabold text-white uppercase tracking-wide">Suppliers Directory</h2>
+                    <p class="text-sm text-textSecondary">Curated suppliers categorized by service from your master list.</p>
                 </div>
-                <div class="w-16 h-16 rounded-full bg-kerf-bg flex items-center justify-center text-kerf-red text-3xl border border-kerf-border group-hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-folder-open"></i>
-                </div>
-            </div>
-            <!-- Metric 2 -->
-            <div class="bg-kerf-card border border-kerf-border rounded-lg p-6 shadow-lg flex items-center justify-between hover:border-kerf-red/30 transition group">
-                <div>
-                    <p class="text-sm font-medium text-kerf-text-secondary uppercase tracking-wider">Ongoing RFQs</p>
-                    <h3 id="statOngoing" class="text-4xl font-extrabold text-pendingyellow mt-2">0</h3>
-                    <p class="text-xs text-kerf-text-secondary mt-2">Awaiting supplier feedback</p>
-                </div>
-                <div class="w-16 h-16 rounded-full bg-kerf-bg flex items-center justify-center text-pendingyellow text-3xl border border-kerf-border group-hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
+                <div class="relative w-72">
+                    <input type="text" id="supplierSearchInput" oninput="filterSuppliersDirectory()" placeholder="Filter suppliers..." class="w-full bg-kerfCard border border-kerfBorder rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
                 </div>
             </div>
-            <!-- Metric 3 -->
-            <div class="bg-kerf-card border border-kerf-border rounded-lg p-6 shadow-lg flex items-center justify-between hover:border-kerf-red/30 transition group">
-                <div>
-                    <p class="text-sm font-medium text-kerf-text-secondary uppercase tracking-wider">Completed / Purchased</p>
-                    <h3 id="statCompleted" class="text-4xl font-extrabold text-successgreen mt-2">0</h3>
-                    <p class="text-xs text-kerf-text-secondary mt-2">Finalized orders</p>
-                </div>
-                <div class="w-16 h-16 rounded-full bg-kerf-bg flex items-center justify-center text-successgreen text-3xl border border-kerf-border group-hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
+            <div id="suppliersContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Populated dynamically -->
             </div>
-        </section>
-
-        <!-- Search & Filter Controls -->
-        <section class="bg-kerf-card border border-kerf-border rounded-lg p-5 mb-10 shadow-lg flex flex-col md:flex-row gap-6 items-center justify-between">
-            <div class="relative w-full md:w-96">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-kerf-text-secondary">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="searchInput" oninput="filterProjects()" placeholder="Search AC number, project name, supplier..." class="w-full bg-kerf-bg border border-kerf-border rounded-md pl-11 pr-4 py-3 text-sm text-kerf-text-primary focus:outline-none focus:ring-2 transition placeholder:text-kerf-text-secondary/50">
-            </div>
-            <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
-                <span class="text-sm text-kerf-text-secondary">Filter by Status:</span>
-                <select id="statusFilter" onchange="filterProjects()" class="bg-kerf-bg border border-kerf-border rounded-md px-4 py-3 text-sm text-kerf-text-primary focus:outline-none focus:ring-2 transition w-full md:w-auto">
-                    <option value="ALL">All Statuses</option>
-                    <option value="PENDING">Pending / Ongoing</option>
-                    <option value="PURCHASED">Purchased</option>
-                </select>
-            </div>
-        </section>
-
-        <!-- Loading Indicator -->
-        <div id="loadingState" class="text-center py-20">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-kerf-border border-t-kerf-red mb-4"></div>
-            <p class="text-kerf-text-secondary text-sm font-medium">Loading project data...</p>
-        </div>
-
-        <!-- Projects Cards Grid -->
-        <section id="projectsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 hidden">
-            <!-- Dynamically rendered project cards go here -->
-        </section>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="hidden text-center py-20 bg-kerf-card border border-kerf-border rounded-lg">
-            <div class="text-kerf-text-border text-5xl mb-4"><i class="fa-solid fa-box-open"></i></div>
-            <h3 class="text-kerf-text-primary font-semibold text-lg">No projects match your criteria</h3>
-            <p class="text-kerf-text-secondary text-sm mt-1">Try adjusting your search or add a new project.</p>
         </div>
 
     </main>
 
     <!-- Floating Action Button ("+") -->
-    <button onclick="openModal()" class="fixed bottom-10 right-10 w-16 h-16 bg-kerf-red hover:bg-kerf-red-hover text-white rounded-full shadow-2xl flex items-center justify-center text-3xl transition transform hover:scale-105 active:scale-95 z-40 focus:outline-none focus:ring-4 focus:ring-red-900" title="Add New Project">
+    <button onclick="openModal()" class="fixed bottom-8 right-8 w-14 h-14 bg-kerfRed hover:bg-kerfRedHover text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition transform hover:scale-105 active:scale-95 z-40 focus:outline-none border border-red-700" title="Add New Project">
         <i class="fa-solid fa-plus"></i>
     </button>
 
     <!-- Submission Modal -->
-    <div id="projectModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
-        <div class="bg-kerf-card border border-kerf-border rounded-lg w-full max-w-3xl shadow-2xl my-8">
-            <div class="flex items-center justify-between border-b border-kerf-border px-6 py-4 sticky top-0 bg-kerf-card z-10">
-                <h3 class="font-bold text-lg text-kerf-text-primary flex items-center space-x-3">
-                    <i class="fa-solid fa-circle-plus text-kerf-red"></i>
-                    <span>CREATE NEW RFQ PROJECT</span>
+    <div id="projectModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-kerfCard border border-kerfBorder rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex items-center justify-between border-b border-kerfBorder px-6 py-4 sticky top-0 bg-kerfCard z-10">
+                <h3 class="font-bold text-lg text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-circle-plus text-kerfRed"></i>
+                    <span>New RFQ Submission</span>
                 </h3>
-                <button onclick="closeModal()" class="text-kerf-text-secondary hover:text-kerf-text-primary text-2xl p-1">
+                <button onclick="closeModal()" class="text-textSecondary hover:text-white text-lg p-1">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <form id="projectForm" onsubmit="handleFormSubmit(event)" class="p-8 space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <form id="projectForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-kerf-text-secondary mb-2">Job ID *</label>
-                        <input type="text" id="modalJobId" required placeholder="e.g. JOB-1042" class="w-full bg-kerf-bg border border-kerf-border rounded-md px-4 py-3 text-sm text-kerf-text-primary focus:ring-2">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Job ID *</label>
+                        <input type="text" id="modalJobId" required placeholder="e.g. JOB-1042" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-kerf-text-secondary mb-2">AC Number *</label>
-                        <input type="text" id="modalAcNumber" required placeholder="e.g. AC-9821" class="w-full bg-kerf-bg border border-kerf-border rounded-md px-4 py-3 text-sm text-kerf-text-primary focus:ring-2">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">AC Number *</label>
+                        <input type="text" id="modalAcNumber" required placeholder="e.g. AC-9821" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-kerf-text-secondary mb-2">Project Name *</label>
-                    <input type="text" id="modalProjectName" required placeholder="e.g. Conveyor Frame Custom Bracket" class="w-full bg-kerf-bg border border-kerf-border rounded-md px-4 py-3 text-sm text-kerf-text-primary focus:ring-2">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Project Name *</label>
+                    <input type="text" id="modalProjectName" required placeholder="e.g. Conveyor Frame Custom Bracket" class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none">
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-kerf-text-secondary mb-2">Category *</label>
-                        <select id="modalCategory" onchange="renderSupplierCheckboxes()" required class="w-full bg-kerf-bg border border-kerf-border rounded-md px-4 py-3 text-sm text-kerf-text-primary focus:ring-2">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Category *</label>
+                        <select id="modalCategory" onchange="renderSupplierCheckboxes()" required class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none">
                             <option value="">Select category...</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-kerf-text-secondary mb-2">Server / Drive Folder Link</label>
-                        <input type="url" id="modalFolderLink" placeholder="https://drive.google.com/..." class="w-full bg-kerf-bg border border-kerf-border rounded-md px-4 py-3 text-sm text-kerf-text-primary focus:ring-2">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Server / Drive Folder Link</label>
+                        <input type="url" id="modalFolderLink" placeholder="https://drive.google.com/..." class="w-full bg-kerfBg border border-kerfBorder rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none">
                     </div>
                 </div>
 
-                <!-- Dynamic Multi-Select Suppliers -->
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-kerf-text-secondary mb-3">Select Suppliers Queried (RFQs Sent) *</label>
-                    <div id="supplierCheckboxesContainer" class="bg-kerf
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Select Suppliers Queried (RFQs Sent)</label>
+                    <div id="supplierCheckboxesContainer" class="bg-kerfBg border border-kerfBorder rounded-lg p-3.5 max-h-40 overflow-y-auto space-y-2">
+                        <p class="text-xs text-textSecondary italic">Select a category first to load matching suppliers.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-textSecondary mb-1.5">Upload Technical Drawing</label>
+                    <input type="file" id="modalFile" class="w-full text-sm text-textSecondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-kerfBg file:text-white hover:file:bg-kerfBorder cursor-pointer border border-kerfBorder rounded-lg">
+                </div>
+
+                <div class="pt-4 border-t border-kerfBorder flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-textSecondary hover:bg-kerfBorder transition">Cancel</button>
+                    <button type="submit" id="submitBtn" class="bg-kerfRed hover:bg-kerfRedHover text-white px-5 py-2 rounded-lg text-sm font-semibold transition flex items-center space-x-2 shadow">
+                        <span>Save Project</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-kerfBorder py-6 text-center text-xs text-textSecondary bg-kerfBg">
+        <p>KERF Projects &bull; Independent RFQ & Procurement Control System</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxjWH48-0yhxgrgt_fwioup42lEufkYqQONqBVquOjzw62Cjap2kT1Hn-NAdXtlY4BVsg/exec";
+
+        let allProjects = [];
+        let allSuppliers = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+
+        async function loadData() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('projectsGrid').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const data = await response.json();
+                allProjects = data.projects || [];
+                allSuppliers = data.suppliers || [];
+
+                populateCategoryDropdown();
+                renderProjects(allProjects);
+                updateMetrics(allProjects);
+                renderSuppliersDirectory(allSuppliers);
+            } catch (err) {
+                console.error("Error loading data:", err);
+                alert("Failed to fetch data from Google Sheet backend.");
+            } finally {
+                document.getElementById('loadingState').classList.add('hidden');
+            }
+        }
+
+        function switchTab(tab) {
+            const dashBtn = document.getElementById('navDashboard');
+            const supBtn = document.getElementById('navSuppliers');
+            const dashView = document.getElementById('viewDashboard');
+            const supView = document.getElementById('viewSuppliers');
+
+            if (tab === 'dashboard') {
+                dashBtn.className = "text-white border-b-2 border-kerfRed pb-1 transition";
+                supBtn.className = "text-textSecondary hover:text-white pb-1 transition";
+                dashView.classList.remove('hidden');
+                supView.classList.add('hidden');
+            } else {
+                supBtn.className = "text-white border-b-2 border-kerfRed pb-1 transition";
+                dashBtn.className = "text-textSecondary hover:text-white pb-1 transition";
+                supView.classList.remove('hidden');
+                dashView.classList.add('hidden');
+            }
+        }
+
+        function updateMetrics(projects) {
+            const total = projects.length;
+            let ongoing = 0;
+            let completed = 0;
+
+            projects.forEach(p => {
+                const status = (p.Status || "").toUpperCase();
+                if (status === "PURCHASED") completed++;
+                else ongoing++;
+            });
+
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statOngoing').innerText = ongoing;
+            document.getElementById('statCompleted').innerText = completed;
+        }
+
+        function renderProjects(projects) {
+            const grid = document.getElementById('projectsGrid');
+            const emptyState = document.getElementById('emptyState');
+            grid.innerHTML = '';
+
+            if (projects.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            projects.forEach(p => {
+                const status = (p.Status || "Pending").toUpperCase();
+                const isPurchased = status === "PURCHASED";
+                
+                let isStale = false;
+                if (!isPurchased && p.SubmissionDate) {
+                    const subDate = new Date(p.SubmissionDate);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - subDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays > 3) isStale = true;
+                }
+
+                const card = document.createElement('div');
+                card.className = `bg-kerfCard border rounded-xl p-5 shadow-xl flex flex-col justify-between transition relative overflow-hidden ${isStale ? 'border-amber-500/60' : 'border-kerfBorder'}`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-3">
+                            <div>
+                                <span class="text-[11px] font-mono bg-kerfBg text-white px-2 py-1 rounded border border-kerfBorder">${p.JobID || 'NO ID'}</span>
+                                <span class="text-[11px] font-mono bg-red-950/60 text-red-300 px-2 py-1 rounded border border-red-900/50 ml-1.5">${p.ACNumber || 'NO AC'}</span>
+                            </div>
+                            <div class="flex items-center space-x-1.5">
+                                ${isStale ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center space-x-1"><i class="fa-solid fa-triangle-exclamation"></i><span>+3 Days Idle</span></span>' : ''}
+                                <select onchange="updateProjectStatus('${p.JobID}', this.value)" class="text-xs font-semibold px-2.5 py-1 rounded border transition cursor-pointer ${isPurchased ? 'bg-successGreen/20 text-successGreen border-successGreen/30' : 'bg-pendingYellow/20 text-pendingYellow border-pendingYellow/30'}">
+                                    <option value="Pending" ${status !== 'PURCHASED' ? 'selected' : ''}>Pending / Ongoing</option>
+                                    <option value="Purchased" ${isPurchased ? 'selected' : ''}>Purchased</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-base text-white mb-1">${p.ProjectName || 'Untitled Project'}</h3>
+                        <p class="text-xs text-textSecondary mb-4 flex items-center space-x-1">
+                            <i class="fa-solid fa-layer-group text-kerfRed"></i>
+                            <span>Category: <strong class="text-white">${p.Category || 'General'}</strong></span>
+                        </p>
+
+                        <div class="space-y-2 mb-5 text-xs bg-kerfBg p-3 rounded-lg border border-kerfBorder">
+                            <div>
+                                <span class="text-textSecondary font-medium">Suppliers Queried:</span>
+                                <p class="text-white font-mono mt-0.5">${p.SuppliersQueried || 'None listed'}</p>
+                            </div>
+                            ${isPurchased ? `
+                                <div class="pt-2 border-t border-kerfBorder flex justify-between items-center">
+                                    <div>
+                                        <span class="text-successGreen font-semibold">Selected Supplier:</span>
+                                        <p class="text-white">${p.SelectedSupplier || 'N/A'}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-successGreen font-semibold">PO Number:</span>
+                                        <p class="text-white font-mono">${p.PONumber || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="pt-2 border-t border-kerfBorder space-y-2">
+                                    <p class="text-[11px] text-textSecondary italic">Capture award details upon completion:</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="text" id="selSup-${p.JobID}" placeholder="Chosen Supplier" value="${p.SelectedSupplier || ''}" class="bg-kerfCard border border-kerfBorder rounded px-2 py-1 text-xs text-white">
+                                        <input type="text" id="poNum-${p.JobID}" placeholder="PO Number" value="${p.PONumber || ''}" class="bg-kerfCard border border-kerfBorder rounded px-2 py-1 text-xs text-white font-mono">
+                                    </div>
+                                    <button onclick="savePurchaseDetails('${p.JobID}')" class="w-full bg-kerfRed hover:bg-kerfRedHover text-white rounded py-1.5 text-[11px] font-semibold transition shadow">Save Award Details</button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-kerfBorder flex items-center justify-between text-xs">
+                        <span class="text-textSecondary">Submitted: ${p.SubmissionDate ? p.SubmissionDate.split('T')[0] : 'N/A'}</span>
+                        ${p.DriveFolderLink ? `<a href="${p.DriveFolderLink}" target="_blank" class="text-kerfRed hover:underline flex items-center space-x-1 font-medium"><i class="fa-solid fa-folder-tree"></i><span>View Drawings</span></a>` : '<span class="text-textSecondary">No folder attached</span>'}
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function filterProjects() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const filtered = allProjects.filter(p => {
+                const ac = (p.ACNumber || "").toLowerCase();
+                const name = (p.ProjectName || "").toLowerCase();
+                const sup = (p.SuppliersQueried || "").toLowerCase();
+                const status = (p.Status || "Pending").toUpperCase();
+
+                const matchesQuery = ac.includes(query) || name.includes(query) || sup.includes(query);
+                let matchesStatus = true;
+                if (statusFilter === "PENDING") matchesStatus = status !== "PURCHASED";
+                else if (statusFilter === "PURCHASED") matchesStatus = status === "PURCHASED";
+
+                return matchesQuery && matchesStatus;
+            });
+
+            renderProjects(filtered);
+        }
+
+        function renderSuppliersDirectory(suppliers) {
+            const container = document.getElementById('suppliersContainer');
+            container.innerHTML = '';
+
+            // Group suppliers by category
+            const grouped = {};
+            suppliers.forEach(s => {
+                const cat = s.Category || 'Uncategorized';
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(s);
+            });
+
+            const categories = Object.keys(grouped);
+            if (categories.length === 0) {
+                container.innerHTML = '<p class="text-textSecondary text-sm col-span-full">No suppliers found in database.</p>';
+                return;
+            }
+
+            categories.forEach(cat => {
+                const card = document.createElement('div');
+                card.className = "bg-kerfCard border border-kerfBorder rounded-xl p-5 shadow-xl space-y-3";
+                
+                let supplierListHtml = '';
+                grouped[cat].forEach(sup => {
+                    supplierListHtml += `
+                        <div class="bg-kerfBg p-2.5 rounded border border-kerfBorder text-xs space-y-1">
+                            <div class="font-bold text-white">${sup.SupplierName || 'Unnamed'}</div>
+                            <div class="text-textSecondary">Contact: ${sup.POCName || 'N/A'} | ${sup.POCEmail || 'N/A'}</div>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-kerfBorder pb-2">
+                        <h3 class="font-bold text-white text-sm uppercase tracking-wide text-kerfRed">${cat}</h3>
+                        <span class="text-xs bg-kerfBg px-2 py-0.5 rounded text-textSecondary">${grouped[cat].length}</span>
+                    </div>
+                    <div class="space-y-2 max-h-60 overflow-y-auto">
+                        ${supplierListHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterSuppliersDirectory() {
+            const query = document.getElementById('supplierSearchInput').value.toLowerCase();
+            const filtered = allSuppliers.filter(s => 
+                (s.SupplierName || "").toLowerCase().includes(query) || 
+                (s.Category || "").toLowerCase().includes(query) ||
+                (s.POCName || "").toLowerCase().includes(query)
+            );
+            renderSuppliersDirectory(filtered);
+        }
+
+        function openModal() {
+            document.getElementById('projectModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('projectModal').classList.add('hidden');
+            document.getElementById('projectForm').reset();
+            document.getElementById('supplierCheckboxesContainer').innerHTML = '<p class="text-xs text-textSecondary italic">Select a category first to load matching suppliers.</p>';
+        }
+
+        function populateCategoryDropdown() {
+            const catSelect = document.getElementById('modalCategory');
+            const categories = [...new Set(allSuppliers.map(s => s.Category).filter(Boolean))];
+            
+            catSelect.innerHTML = '<option value="">Select category...</option>';
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                catSelect.appendChild(opt);
+            });
+        }
+
+        function renderSupplierCheckboxes() {
+            const selectedCat = document.getElementById('modalCategory').value;
+            const container = document.getElementById('supplierCheckboxesContainer');
+            container.innerHTML = '';
+
+            const matchingSuppliers = allSuppliers.filter(s => s.Category === selectedCat);
+
+            if (matchingSuppliers.length === 0) {
+                container.innerHTML = '<p class="text-xs text-textSecondary italic">No suppliers found for this category.</p>';
+                return;
+            }
+
+            matchingSuppliers.forEach(sup => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 text-xs text-white cursor-pointer hover:text-red-400';
+                label.innerHTML = `
+                    <input type="checkbox" name="supplierCheckbox" value="${sup.SupplierName}" class="rounded bg-kerfCard border-kerfBorder text-kerfRed focus:ring-0">
+                    <span>${sup.SupplierName}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Saving...";
+
+            const jobId = document.getElementById('modalJobId').value;
+            const acNumber = document.getElementById('modalAcNumber').value;
+            const projectName = document.getElementById('modalProjectName').value;
+            const category = document.getElementById('modalCategory').value;
+            const folderLink = document.getElementById('modalFolderLink').value;
+
+            const checkboxes = document.querySelectorAll('input[name="supplierCheckbox"]:checked');
+            const selectedSuppliers = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
+            const fileInput = document.getElementById('modalFile');
+            let fileBase64 = "";
+            let fileName = "";
+            let fileMimeType = "";
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName = file.name;
+                fileMimeType = file.type;
+                fileBase64 = await toBase64(file);
+            }
+
+            const payload = {
+                action: "create",
+                JobID: jobId,
+                ACNumber: acNumber,
+                ProjectName: projectName,
+                Category: category,
+                SuppliersQueried: selectedSuppliers,
+                DriveFolderLink: folderLink,
+                fileBase64: fileBase64,
+                fileName: fileName,
+                fileMimeType: fileMimeType
+            };
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                closeModal();
+                loadData();
+            } catch (err) {
+                console.error("Error creating project:", err);
+                alert("Failed to save project.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Save Project";
+            }
+        }
+
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+
+        async function updateProjectStatus(jobId, newStatus) {
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "update",
+                        JobID: jobId,
+                        Status: newStatus
+                    })
+                });
+                loadData();
+            } catch (err) {
+                console.error("Error updating status:", err);
+                alert("Failed to update status.");
+            }
+        }
+
+        async function savePurchaseDetails(jobId) {
+            const selSup = document.getElementById(`selSup-${jobId}`).value;
+            const poNum = document.getElementById(`poNum-${jobId}`).value;
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "update",
+                        JobID: jobId,
+                        Status: "Purchased",
+                        SelectedSupplier: selSup,
+                        PONumber: poNum
+                    })
+                });
+                loadData();
+            } catch (err) {
+                console.error("Error saving award details:", err);
+                alert("Failed to save award details.");
+            }
+        }
+    </script>
+</body>
+</html>
